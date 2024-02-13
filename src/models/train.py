@@ -10,9 +10,11 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-from utils import *
-from image_transformer_net import ImageTransformNet
-from vgg16 import Vgg16
+import src.utils.images_utils as iu
+from src.utils.measure_correlations import gram
+from src.networks.image_transformer_net import ImageTransformNet
+from src.networks.vgg16 import Vgg16
+
 
 def train(args:ArgumentParser) -> None:
     """
@@ -56,8 +58,8 @@ def train(args:ArgumentParser) -> None:
         transforms.Resize((args.image_size, args.image_size)), # forces the image into a square of size (image_size, image_size)
         transforms.CenterCrop(args.image_size),      # crops the image at the center
         transforms.ToTensor(),                  # convert the image to a [0., 1.] tensor
-        transforms.Normalize(mean=IMAGENET_MEAN,
-                             std=IMAGENET_STD)      # normalize the tensor with ImageNet values
+        transforms.Normalize(mean=iu.IMAGENET_MEAN,
+                             std=iu.IMAGENET_STD)      # normalize the tensor with ImageNet values
     ])
 
     # load the dataset from the desired folder and pass it to the data loader
@@ -74,10 +76,10 @@ def train(args:ArgumentParser) -> None:
     # define style image preprocessing steps
     style_transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=IMAGENET_MEAN,
-                             std=IMAGENET_STD)
+        transforms.Normalize(mean=iu.IMAGENET_MEAN,
+                             std=iu.IMAGENET_STD)
     ])
-    style = load_image(args.style_image)
+    style = iu.load_image(args.style_image)
     style = style_transform(style)
     
     style = Variable(style.repeat(args.batch_size, 1, 1, 1)).to(device) # duplicates the tensor to match the batch size.

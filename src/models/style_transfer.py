@@ -7,8 +7,8 @@ import torch
 import os
 import re
 
-from utils import *
-from image_transformer_net import ImageTransformNet
+import src.utils.images_utils as iu
+from src.networks.image_transformer_net import ImageTransformNet
 
 def preprocess_image(img_filename:str, transforms:transforms.Compose, device:torch.device):
     """
@@ -29,7 +29,7 @@ def preprocess_image(img_filename:str, transforms:transforms.Compose, device:tor
         the converted image.
 
     """
-    ctt = load_image(img_filename)
+    ctt = iu.load_image(img_filename)
     ctt = transforms(ctt).unsqueeze(0)
 
     return ctt.to(device)
@@ -62,8 +62,8 @@ def style_transfer(args:ArgumentParser) -> None :
         transforms.Resize((args.image_size, args.image_size)), # forces the image into a square of size (image_size, image_size)
         transforms.CenterCrop(args.image_size),      # crops the image at the center
         transforms.ToTensor(),                  # convert the image to a [0., 1.] tensor
-        transforms.Normalize(mean=IMAGENET_MEAN,
-                             std=IMAGENET_STD)      # normalize the tensor with ImageNet values
+        transforms.Normalize(mean=iu.IMAGENET_MEAN,
+                             std=iu.IMAGENET_STD)      # normalize the tensor with ImageNet values
     ])
 
     style_model = ImageTransformNet().to(device) # loads the image transformation network and sends it to the device.
@@ -83,7 +83,7 @@ def style_transfer(args:ArgumentParser) -> None :
         content = preprocess_image(img_path, image_transform, device) # preproces the image before feeding it to the model.
         stylized = style_model(content).cpu() # stylize the image and bring it back onto the cpu before saving it.
         out_im_fn = f"{model_name}_{img_fn}"
-        save_image(os.path.join(output_dir, out_im_fn), stylized.data[0])
+        iu.save_image(os.path.join(output_dir, out_im_fn), stylized.data[0])
         count += 1
 
     print(f"Average inference time : {(datetime.now() - start) / count}")

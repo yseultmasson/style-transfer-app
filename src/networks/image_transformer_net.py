@@ -1,6 +1,5 @@
 """Image transformation network, which turns an input image into its stylized version."""
 import torch.nn as nn
-import torch
 
 # Class of the convolutional layers, used as encoding layers in the ImageTransformNet class and in the ResidualBlock class.
 class ConvLayer(nn.Module):
