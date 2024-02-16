@@ -6,36 +6,47 @@ from datetime import datetime
 import torch
 import os
 import re
+from PIL import Image
 
 import src.utils.images_utils as iu
 from src.networks.image_transformer_net import ImageTransformNet
 
-def preprocess_image(img_filename:str, transforms:transforms.Compose, device:torch.device):
+
+def style_transfer(image: Image.Image, device: torch.device, model: torch.nn.Module, img_size: int = 180) -> Image.Image:
     """
-    Loads the image, and sends it to the device used for the generation (GPU if possible, else CPU).
+    Apply style transfer to the input image using the given model.
 
-    Parameters
-    ----------
-    img_filename : str
-        the relative path leading to the image.
-    transforms : transforms.Compose
-        the transformations done to the image. It is passed as an argument for flexibility.
-    device : torch.device
-        the device used for the generation (GPU if possible, else CPU).
+    Parameters:
+    - image (PIL.Image.Image): The original image.
+    - device (torch.device): The device on which to perform the style transfer (e.g., 'cuda' for GPU or 'cpu').
+    - model (torch.nn.Module): The pre-trained style transfer model.
+    - img_size (int): The size of the output image. Default is 180.
 
-    Returns
-    -------
-    tensor : 
-        the converted image.
-
+    Returns:
+    - PIL.Image.Image: The stylized image.
     """
-    ctt = iu.load_image(img_filename)
-    ctt = transforms(ctt).unsqueeze(0)
 
-    return ctt.to(device)
+    # Preprocess image
+    image_transform = transforms.Compose([
+        transforms.Resize((img_size, img_size)),          # Scale shortest side to image_size
+        transforms.CenterCrop(img_size),                  # Crop center image_size out
+        transforms.ToTensor(),                            # Turn image from [0-255] to [0-1]
+        transforms.Normalize(mean=iu.IMAGENET_MEAN,
+                             std=iu.IMAGENET_STD)            # Normalize with ImageNet values
+    ])
+
+    image = image_transform(image).unsqueeze(0).to(device)
+
+    # Perform style transfer
+    image = model(image).cpu().data[0]
+
+    # Denormalize the output image
+    image = iu.denormalize_image(image)
+
+    return image
 
 
-def style_transfer(args:ArgumentParser) -> None :
+def folder_style_transfer(args:ArgumentParser) -> None :
     """
     Uses an already trained model to perform style transfer over some base images.
 
@@ -57,15 +68,6 @@ def style_transfer(args:ArgumentParser) -> None :
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # content image
-    image_transform = transforms.Compose([
-        transforms.Resize((args.image_size, args.image_size)), # forces the image into a square of size (image_size, image_size)
-        transforms.CenterCrop(args.image_size),      # crops the image at the center
-        transforms.ToTensor(),                  # convert the image to a [0., 1.] tensor
-        transforms.Normalize(mean=iu.IMAGENET_MEAN,
-                             std=iu.IMAGENET_STD)      # normalize the tensor with ImageNet values
-    ])
-
     style_model = ImageTransformNet().to(device) # loads the image transformation network and sends it to the device.
     style_model.load_state_dict(torch.load(args.model_path, map_location=device)) # loads the weights of the desired model.
 
@@ -80,10 +82,10 @@ def style_transfer(args:ArgumentParser) -> None :
     count = 0
     for img_fn in tqdm(os.listdir(args.source), desc="Stylizing images"): # stylize all images present in the source directory.
         img_path = os.path.join(args.source, img_fn)
-        content = preprocess_image(img_path, image_transform, device) # preproces the image before feeding it to the model.
-        stylized = style_model(content).cpu() # stylize the image and bring it back onto the cpu before saving it.
+        content = iu.load_image(img_path)
+        stylized = style_transfer(content, device, style_model, args.image_size)
         out_im_fn = f"{model_name}_{img_fn}"
-        iu.save_image(os.path.join(output_dir, out_im_fn), stylized.data[0])
+        iu.save_image(os.path.join(output_dir, out_im_fn), stylized, denormalize=False)
         count += 1
 
     print(f"Average inference time : {(datetime.now() - start) / count}")
@@ -113,4 +115,4 @@ if __name__ == '__main__':
         help="Size of the input images (both width and height).")
 
     args = parser.parse_args()
-    style_transfer(args)
+    folder_style_transfer(args)
