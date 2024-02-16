@@ -1,21 +1,25 @@
 import streamlit as st
 import os
 from PIL import Image
+import torch
+
+from src.networks.image_transformer_net import ImageTransformNet
+from src.models.style_transfer import style_transfer
 
 
 def display_styles(styles_path='static/styles'):
-    st.title('Choose one of the following styles')
-
     # Create a dictionnary with the different styles names and the paths to the corresponding images
     styles = {}
     for style in os.listdir(styles_path):
         styles[style.split('.')[0]] = f'{styles_path}/{style}'
 
     # Display the box to choose a style
-    selected_image = st.selectbox('Select an image:', list(styles.keys()))
+    selected_style = st.selectbox('Choose one of the following styles:', list(styles.keys()))
 
     # Display the selected image
-    st.image(styles[selected_image], caption=selected_image, width=256)
+    st.image(styles[selected_style], caption=selected_style, width=256)
+
+    return selected_style
 
 
 def upload_image():
@@ -27,10 +31,28 @@ def upload_image():
 
     return uploaded_image
 
+@st.cache_data
+def torch_device():
+    print('device')
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def transform_image(image):
+
+@st.cache_data
+def load_model(model_path, device):
+    print('model')
+    style_model = ImageTransformNet().to(device) # loads the image transformation network and sends it to the device.
+    style_model.load_state_dict(torch.load(model_path, map_location=device)) # loads the weights of the desired model.
+
+    return style_model
+
+
+def transform_image(image, device, model):
+    print('transform')
     image = Image.open(image)
-    return image.convert('1')
+    size = image.size
+    image = style_transfer(image, device, model, img_size=max(size))
+    image = image.resize(size)
+    return image
 
 
 def display_transformed_image(original_image, transformed_image):
@@ -43,9 +65,17 @@ def display_transformed_image(original_image, transformed_image):
     with col2:
         st.image(transformed_image, caption='Transformed image', use_column_width=True)
 
-if __name__ == "__main__":
-    display_styles()
+
+def main():
+    st.title('Add a new style to your images!')
+    device = torch_device()
+    style = display_styles()
+    model = load_model(f'models/{style}.model', device)
     image = upload_image()
     if image is not None:
-        transformed_image = transform_image(image)
+        transformed_image = transform_image(image, device, model)
         display_transformed_image(image, transformed_image)
+
+
+if __name__ == "__main__":
+    main()
