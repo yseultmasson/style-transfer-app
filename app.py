@@ -8,6 +8,7 @@ from src.models.style_transfer import style_transfer
 
 
 def display_styles(styles_path='static/styles'):
+
     # Create a dictionnary with the different styles names and the paths to the corresponding images
     styles = {}
     for style in os.listdir(styles_path):
@@ -23,6 +24,7 @@ def display_styles(styles_path='static/styles'):
 
 
 def upload_image():
+
     # File uploader widget for image upload
     uploaded_image = st.file_uploader('Upload an image:', type=['jpg', 'jpeg', 'png'])
 
@@ -31,15 +33,16 @@ def upload_image():
 
     return uploaded_image
 
+
 @st.cache_data
 def torch_device():
-    print('device')
+    """Set torch device for style transfer models"""
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 @st.cache_data
 def load_model(model_path, device):
-    print('model')
+    """Load the specified style transfer model"""
     style_model = ImageTransformNet().to(device) # loads the image transformation network and sends it to the device.
     style_model.load_state_dict(torch.load(model_path, map_location=device)) # loads the weights of the desired model.
 
@@ -47,7 +50,7 @@ def load_model(model_path, device):
 
 
 def transform_image(image, device, model):
-    print('transform')
+    """Apply style transfer to the image"""
     image = Image.open(image)
     size = image.size
     image = style_transfer(image, device, model, img_size=max(size))
@@ -56,7 +59,8 @@ def transform_image(image, device, model):
 
 
 def display_transformed_image(original_image, transformed_image):
-    # Display the original and the transformed images side by side
+    """Display the original and the transformed images"""
+
     col1, col2 = st.columns(2)  # Create two columns
 
     with col1:
