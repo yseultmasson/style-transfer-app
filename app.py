@@ -1,10 +1,13 @@
 import streamlit as st
 import os
+import requests
+from io import BytesIO
 from PIL import Image
 import torch
 
 from src.networks.image_transformer_net import ImageTransformNet
 from src.models.style_transfer import style_transfer
+from src.utils.get_yaml_config import import_yaml_config
 
 
 def display_styles(styles_path='static/styles'):
@@ -43,8 +46,10 @@ def torch_device():
 @st.cache_data
 def load_model(model_path, device):
     """Load the specified style transfer model"""
+    response = requests.get(model_path)
+    model_bytes = BytesIO(response.content)
     style_model = ImageTransformNet().to(device) # loads the image transformation network and sends it to the device.
-    style_model.load_state_dict(torch.load(model_path, map_location=device)) # loads the weights of the desired model.
+    style_model.load_state_dict(torch.load(model_bytes, map_location=device)) # loads the weights of the desired model.
 
     return style_model
 
@@ -70,11 +75,11 @@ def display_transformed_image(original_image, transformed_image):
         st.image(transformed_image, caption='Transformed image', use_column_width=True)
 
 
-def main():
+def main(models_folder):
     st.title('Add a new style to your images!')
     device = torch_device()
     style = display_styles()
-    model = load_model(f'models/{style}.model', device)
+    model = load_model(f"{models_folder}/{style}.model", device)
     image = upload_image()
     if image is not None:
         transformed_image = transform_image(image, device, model)
@@ -82,4 +87,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    config = import_yaml_config()
+    models_folder = config.get("models_folder", "https://minio.lab.sspcloud.fr/mbricaire/mise-en-production/models")
+    main(models_folder=models_folder)
