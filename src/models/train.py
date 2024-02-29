@@ -159,7 +159,7 @@ def train(args:ArgumentParser) -> None:
 
     if not os.path.exists("models"):
         os.makedirs("models")
-    fn = f"models/{style_name}_{args.epochs}_epochs_{len(train_dataset)}_samples_{args.content_extraction + 1}_{args.content_weight}_cttwght.model"
+    fn = f"models/{style_name}.model"
     torch.save(image_transformer.state_dict(), fn)
 
 
