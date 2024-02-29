@@ -1,0 +1,5 @@
+# Necessary to upload files in the app
+
+[server]
+enableXsrfProtection = false
+enableCORS = false
