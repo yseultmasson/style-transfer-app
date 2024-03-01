@@ -1,4 +1,5 @@
 """Get yaml configuration."""
+
 import os
 import yaml
 

@@ -1,8 +1,9 @@
 """Function to compute gram matrices."""
+
 import torch
 
 
-def gram(x:torch.Tensor) -> torch.Tensor:
+def gram(x: torch.Tensor) -> torch.Tensor:
     """
     Calculates the gram matrix of a tensor
 
@@ -18,7 +19,7 @@ def gram(x:torch.Tensor) -> torch.Tensor:
 
     """
     (bs, ch, h, w) = x.size()
-    f = x.view(bs, ch, w*h)
+    f = x.view(bs, ch, w * h)
     f_T = f.transpose(1, 2)
     G = f.bmm(f_T) / (ch * h * w)
     return G
