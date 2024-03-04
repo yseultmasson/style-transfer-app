@@ -1,9 +1,9 @@
 """Main script for model training of the generative approach."""
-import torch
 import os
 from argparse import ArgumentParser
-from tqdm import tqdm
 from datetime import datetime
+from tqdm import tqdm
+import torch
 
 from torch.autograd import Variable
 from torch.optim import Adam
@@ -32,10 +32,13 @@ def train(args:ArgumentParser) -> None:
         args.lr : a float. The learning rate used during optimization.
         args.epochs : an int. The number of training epochs.
         args.style-weight : a float. The weight given to the style loss. Default: 1e5
-        args.content-weight : a float. The weight given to the content (feature reconstruction) loss. Default: 1e0
-        args.tv-reg : a boolean. If true, adds a total variation regularization term to the total loss.
+        args.content-weight : a float. The weight given to the content 
+                            (feature reconstruction) loss. Default: 1e0
+        args.tv-reg : a boolean. If true, adds a total variation 
+                            regularization term to the total loss.
         args.tv-weight : a float. The weight given to the total variation loss. Default : 1e-7
-        args.content-extraction :  an int, between 0 and 3. Layer used to compute the content loss among ('conv1_2', 'conv2_2', 'conv3_3', 'conv4_3')
+        args.content-extraction :  an int, between 0 and 3. Layer used to compute the content 
+                            loss among ('conv1_2', 'conv2_2', 'conv3_3', 'conv4_3')
 
     Returns
     -------
@@ -46,8 +49,11 @@ def train(args:ArgumentParser) -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # instantiate the image transformation network
-    image_transformer = ImageTransformNet().to(device) # loads the image transformation network and sends it to the device.
-    optimizer = Adam(image_transformer.parameters(), args.lr) # instantiate the optimizer with the desired learning rate.
+
+    # loads the image transformation network and sends it to the device.
+    image_transformer = ImageTransformNet().to(device)
+    # instantiate the optimizer with the desired learning rate.
+    optimizer = Adam(image_transformer.parameters(), args.lr)
     loss_mse = torch.nn.MSELoss()
 
     # instantiate the pretrained vgg network (loss network) and send it to the device
@@ -55,7 +61,7 @@ def train(args:ArgumentParser) -> None:
 
     # define image preprocessing steps for training data
     dataset_transform = transforms.Compose([
-        transforms.Resize((args.image_size, args.image_size)), # forces the image into a square of size (image_size, image_size)
+        transforms.Resize((args.image_size, args.image_size)), # forces the image into a square
         transforms.CenterCrop(args.image_size),      # crops the image at the center
         transforms.ToTensor(),                  # convert the image to a [0., 1.] tensor
         transforms.Normalize(mean=iu.IMAGENET_MEAN,
@@ -66,7 +72,7 @@ def train(args:ArgumentParser) -> None:
     start = datetime.now()
     print("Fetching train data")
     train_dataset = datasets.ImageFolder(args.dataset,
-                                         dataset_transform)    
+                                         dataset_transform)
     print(f"Done : {datetime.now() - start}")
 
     train_loader = DataLoader(train_dataset,
@@ -81,10 +87,12 @@ def train(args:ArgumentParser) -> None:
     ])
     style = iu.load_image(args.style_image)
     style = style_transform(style)
-    
-    style = Variable(style.repeat(args.batch_size, 1, 1, 1)).to(device) # duplicates the tensor to match the batch size.
-    style_name = os.path.split(args.style_image)[-1].split('.')[0] # will be used to create the name of the saved model.
-    
+
+    # duplicates the tensor to match the batch size.
+    style = Variable(style.repeat(args.batch_size, 1, 1, 1)).to(device)
+    # will be used to create the name of the saved model.
+    style_name = os.path.split(args.style_image)[-1].split('.')[0]
+
 
     # compute the gram matrices of the style feature maps we care about
     style_features = vgg(style)
@@ -101,7 +109,7 @@ def train(args:ArgumentParser) -> None:
 
         # train network
         image_transformer.train() # start training the image transformation network.
-        for batch_idx, (x, label) in enumerate(tqdm(train_loader, desc=f"Epoch {e + 1}")):
+        for batch_idx, (x, _) in enumerate(tqdm(train_loader, desc=f"Epoch {e + 1}")):
             img_batch_read = len(x)
             img_count += img_batch_read
 
@@ -125,7 +133,7 @@ def train(args:ArgumentParser) -> None:
             agg_style_loss += style_loss.item()
 
             # compute the content (feature reconstruction) loss
-            recon = y_c_features[args.content_extraction]      
+            recon = y_c_features[args.content_extraction]
             recon_hat = y_hat_features[args.content_extraction]
             content_loss = args.content_weight * loss_mse(recon_hat, recon)
             agg_content_loss += content_loss.item()
@@ -146,7 +154,7 @@ def train(args:ArgumentParser) -> None:
             optimizer.step()
 
             # display training status every 1000 batches
-            if ((batch_idx + 1) % 1000 == 0):
+            if (batch_idx + 1) % 1000 == 0:
                 status = f"""
                 Epoch {e + 1}: {img_count}/{len(train_dataset)}
                 agg_style_loss: {agg_style_loss / (batch_idx + 1)}
@@ -222,5 +230,5 @@ if __name__ == '__main__':
         default=1,
         help="Use feature maps after block (content-extraction + 1) for content loss.")
 
-    args = parser.parse_args()
-    train(args)
+    arguments = parser.parse_args()
+    train(arguments)

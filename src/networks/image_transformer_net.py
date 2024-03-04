@@ -1,10 +1,10 @@
 """Image transformation network, which turns an input image into its stylized version."""
 
-import torch.nn as nn
+from torch import nn
 
 
-# Class of the convolutional layers, used as encoding layers in the ImageTransformNet class and in the ResidualBlock class.
 class ConvLayer(nn.Module):
+    """Class of the convolutional layers."""
     def __init__(self, in_channels, out_channels, kernel_size, stride):
         super(ConvLayer, self).__init__()
         padding = kernel_size // 2
@@ -12,13 +12,14 @@ class ConvLayer(nn.Module):
         self.conv2d = nn.Conv2d(in_channels, out_channels, kernel_size, stride)
 
     def forward(self, x):
+        """Forward pass."""
         out = self.reflection_pad(x)
         out = self.conv2d(out)
         return out
 
 
-# Class of the Upsample convolutional layers, used as decoding layers in the ImageTransformNet class
 class UpsampleConvLayer(nn.Module):
+    """Class of the Upsample convolutional layers."""
     def __init__(self, in_channels, out_channels, kernel_size, stride, upsample=None):
         super(UpsampleConvLayer, self).__init__()
         self.upsample = upsample
@@ -29,6 +30,7 @@ class UpsampleConvLayer(nn.Module):
         self.conv2d = nn.Conv2d(in_channels, out_channels, kernel_size, stride)
 
     def forward(self, x):
+        """Forward pass."""
         if self.upsample:
             x = self.upsample(x)
         out = self.reflection_pad(x)
@@ -36,8 +38,8 @@ class UpsampleConvLayer(nn.Module):
         return out
 
 
-# Residual Block adapted from https://github.com/yunjey/pytorch-tutorial/blob/master/tutorials/02-intermediate/deep_residual_network/main.py
 class ResidualBlock(nn.Module):
+    """Residual Block."""
     def __init__(self, channels):
         super(ResidualBlock, self).__init__()
         self.conv1 = ConvLayer(channels, channels, kernel_size=3, stride=1)
@@ -47,6 +49,7 @@ class ResidualBlock(nn.Module):
         self.in2 = nn.InstanceNorm2d(channels, affine=True)
 
     def forward(self, x):
+        """Forward pass."""
         residual = x
         out = self.relu(self.in1(self.conv1(x)))
         out = self.in2(self.conv2(out))
@@ -55,8 +58,8 @@ class ResidualBlock(nn.Module):
         return out
 
 
-# Image transformation network, used to stylize an input image. See our report for more details.
 class ImageTransformNet(nn.Module):
+    """Image transformation network, used to stylize an input image."""
     def __init__(self):
         super(ImageTransformNet, self).__init__()
 
@@ -103,6 +106,7 @@ class ImageTransformNet(nn.Module):
         self.in1_d = nn.InstanceNorm2d(3, affine=True)
 
     def forward(self, x):
+        """Forward pass."""
         # encoding layers : convolutions followed by instance normalization and ReLU activation.
         y = self.relu(self.in1_e(self.conv1(x)))
         y = self.relu(self.in2_e(self.conv2(y)))
@@ -115,7 +119,7 @@ class ImageTransformNet(nn.Module):
         y = self.res4(y)
         y = self.res5(y)
 
-        # decoding layers : deconvolutions followed by instance normalization and ReLU activation (not the last one).
+        # deconvolutions followed by instance normalization and ReLU activation (not the last one).
         y = self.relu(self.in3_d(self.deconv3(y)))
         y = self.relu(self.in2_d(self.deconv2(y)))
         y = self.deconv1(y)

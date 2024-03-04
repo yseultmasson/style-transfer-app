@@ -1,10 +1,11 @@
 """Custom implementation of the VGG16 network architecture."""
 
-import torch.nn as nn
+from torch import nn
 from torchvision import models
 
 
 class Vgg16(nn.Module):
+    """VGG16 class."""
     def __init__(self, mode="generative_st"):
         super(Vgg16, self).__init__()
         self.mode = mode
@@ -63,13 +64,15 @@ class Vgg16(nn.Module):
                 "4_1",
                 "4_2",
                 "5_1",
-            ]  # the feature maps used for the descriptive approach. Note that 'conv4_2' is the one for content reconstruction.
+            ]  # the feature maps used for the descriptive approach.
+               # Note that 'conv4_2' is the one for content reconstruction.
 
         # Freeze model parameters
         for param in self.parameters():
             param.requires_grad = False
 
     def forward(self, x):
+        """Forward pass."""
         feature_maps = []
 
         for i in range(len(self.relu_names)):
@@ -86,7 +89,9 @@ class Vgg16(nn.Module):
                 )  # return the feature_maps used by the generative approach.
 
         feature_maps[-2], feature_maps[-1] = feature_maps[-1], feature_maps[-2]
-        # after this line, the order of the feature maps is as follows for the descriptive approach: ['1_1', '2_1', '3_1', '4_1', '5_1, '4_2'].
-        # The first five items correspond to the style extraction, the last one corresponds to content extraction. This order allows to use index -1 elsewhere to access content features.
+        # after this line, the order of the feature maps is as follows for the descriptive approach:
+        # ['1_1', '2_1', '3_1', '4_1', '5_1, '4_2'].
+        # The first five items correspond to the style extraction, the last one corresponds to
+        # content extraction. This allows to use index -1 elsewhere to access content features.
 
         return tuple(feature_maps)

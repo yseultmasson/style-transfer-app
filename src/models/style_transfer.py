@@ -1,24 +1,26 @@
 """Style transfer."""
 from argparse import ArgumentParser
-from torchvision import transforms
-from tqdm import tqdm
 from datetime import datetime
-import torch
 import os
 import re
 from PIL import Image
+import torch
+from torchvision import transforms
+from tqdm import tqdm
 
 import src.utils.images_utils as iu
 from src.networks.image_transformer_net import ImageTransformNet
 
 
-def style_transfer(image: Image.Image, device: torch.device, model: torch.nn.Module, img_size: int = 180) -> Image.Image:
+def style_transfer(image: Image.Image, device: torch.device,
+                   model: torch.nn.Module, img_size: int = 180) -> Image.Image:
     """
     Apply style transfer to the input image using the given model.
 
     Parameters:
     - image (PIL.Image.Image): The original image.
-    - device (torch.device): The device on which to perform the style transfer (e.g., 'cuda' for GPU or 'cpu').
+    - device (torch.device): The device on which to perform the style transfer 
+                            (e.g., 'cuda' for GPU or 'cpu').
     - model (torch.nn.Module): The pre-trained style transfer model.
     - img_size (int): The size of the output image. Default is 180.
 
@@ -56,20 +58,24 @@ def folder_style_transfer(args:ArgumentParser) -> None :
         arguments passed through a terminal. Here is the list of arguments:
             
             args.model-path : a str. The path leading to the trained model to use.
-            args.source: a str. The path to the folder containing the images to stylize. Many images can be transformed at once.
+            args.source: a str. The path to the folder containing the images to stylize. 
+                                Many images can be transformed at once.
             args.output: a str. The path where the stylized images will be saved.
-            args.image-size: a float. The size (both height and width: if the image is not squared, it will be after the transform) of the output image
+            args.image-size: a float. The size (both height and width: if the image is not squared, 
+                                it will be after the transform) of the output image
 
     Returns
     -------
     None. Everything is done inside the function.
 
     """
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    style_model = ImageTransformNet().to(device) # loads the image transformation network and sends it to the device.
-    style_model.load_state_dict(torch.load(args.model_path, map_location=device)) # loads the weights of the desired model.
+    # loads the image transformation network and sends it to the device.
+    style_model = ImageTransformNet().to(device)
+    # loads the weights of the desired model.
+    style_model.load_state_dict(torch.load(args.model_path, map_location=device))
 
     pattern = re.compile(r"\/([a-zA-Z_]+)\.model")
     model_name = pattern.search(args.model_path).group(1)
@@ -80,7 +86,8 @@ def folder_style_transfer(args:ArgumentParser) -> None :
 
     start = datetime.now()
     count = 0
-    for img_fn in tqdm(os.listdir(args.source), desc="Stylizing images"): # stylize all images present in the source directory.
+    # stylize all images present in the source directory.
+    for img_fn in tqdm(os.listdir(args.source), desc="Stylizing images"):
         img_path = os.path.join(args.source, img_fn)
         content = iu.load_image(img_path)
         stylized = style_transfer(content, device, style_model, args.image_size)
@@ -114,5 +121,5 @@ if __name__ == '__main__':
         default=256,
         help="Size of the input images (both width and height).")
 
-    args = parser.parse_args()
-    folder_style_transfer(args)
+    arguments = parser.parse_args()
+    folder_style_transfer(arguments)
