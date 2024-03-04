@@ -21,4 +21,4 @@ jobs:
           pip install pylint
       - name: Lint
         run: |
-          pylint src app.py --fail-under=6
+          pylint src app.py

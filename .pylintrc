@@ -39,7 +39,7 @@ extension-pkg-whitelist=
 fail-on=
 
 # Specify a score threshold under which the program will exit with error.
-fail-under=6
+fail-under=9
 
 # Interpret the stdin as a python script, whose filename needs to be passed as
 # the module_or_package argument.
@@ -285,10 +285,10 @@ exclude-too-few-public-methods=
 ignored-parents=
 
 # Maximum number of arguments for function / method.
-max-args=5
+max-args=7
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=7
+max-attributes=20
 
 # Maximum number of boolean expressions in an if statement (see R0916).
 max-bool-expr=5
@@ -431,7 +431,8 @@ disable=raw-checker-failed,
         use-symbolic-message-instead,
         use-implicit-booleaness-not-comparison-to-string,
         use-implicit-booleaness-not-comparison-to-zero,
-        not-callable
+        not-callable,
+        super-with-arguments
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
