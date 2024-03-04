@@ -5,6 +5,7 @@ import yaml
 
 
 def import_yaml_config(filename: str = "configuration/config.yaml") -> dict:
+    """Import configuration from specified yaml file."""
     dict_config = {}
     if os.path.exists(filename):
         with open(filename, "r", encoding="utf-8") as stream:

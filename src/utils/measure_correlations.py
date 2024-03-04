@@ -14,12 +14,12 @@ def gram(x: torch.Tensor) -> torch.Tensor:
 
     Returns
     -------
-    G : Tensor
+    gram_matrix : Tensor
         The Gram matrix associated to x, of shape (batch_size, channels, channels).
 
     """
     (bs, ch, h, w) = x.size()
     f = x.view(bs, ch, w * h)
-    f_T = f.transpose(1, 2)
-    G = f.bmm(f_T) / (ch * h * w)
-    return G
+    f_t = f.transpose(1, 2)
+    gram_matrix = f.bmm(f_t) / (ch * h * w)
+    return gram_matrix
