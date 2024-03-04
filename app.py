@@ -1,7 +1,9 @@
-import streamlit as st
+"""App that applies style transfer to an image uploaded by a user."""
+
 import os
-import requests
 from io import BytesIO
+import requests
+import streamlit as st
 from PIL import Image
 import torch
 
@@ -11,6 +13,7 @@ from src.utils.get_yaml_config import import_yaml_config
 
 
 def display_styles(styles_path='static/styles'):
+    """Display the different styles and allow the user to select one."""
 
     # Create a dictionnary with the different styles names and the paths to the corresponding images
     styles = {}
@@ -27,6 +30,7 @@ def display_styles(styles_path='static/styles'):
 
 
 def upload_image():
+    """Display a box in which the user can upload an image."""
 
     # File uploader widget for image upload
     uploaded_image = st.file_uploader('Upload an image:', type=['jpg', 'jpeg', 'png'])
@@ -45,17 +49,22 @@ def torch_device():
 
 @st.cache_data
 def load_model(model_path, device):
-    """Load the specified style transfer model"""
-    response = requests.get(model_path)
+    """Load the specified style transfer model."""
+
+    response = requests.get(model_path, timeout=30)
     model_bytes = BytesIO(response.content)
-    style_model = ImageTransformNet().to(device) # loads the image transformation network and sends it to the device.
-    style_model.load_state_dict(torch.load(model_bytes, map_location=device)) # loads the weights of the desired model.
+
+    # Load the image transformation network and sends it to the device.
+    style_model = ImageTransformNet().to(device)
+
+    # Load the weights of the desired model.
+    style_model.load_state_dict(torch.load(model_bytes, map_location=device))
 
     return style_model
 
 
 def transform_image(image, device, model):
-    """Apply style transfer to the image"""
+    """Apply style transfer to the image."""
     image = Image.open(image)
     size = image.size
     image = style_transfer(image, device, model, img_size=max(size))
@@ -64,7 +73,7 @@ def transform_image(image, device, model):
 
 
 def display_transformed_image(original_image, transformed_image):
-    """Display the original and the transformed images"""
+    """Display the original and the transformed images."""
 
     col1, col2 = st.columns(2)  # Create two columns
 
@@ -75,11 +84,15 @@ def display_transformed_image(original_image, transformed_image):
         st.image(transformed_image, caption='Transformed image', use_column_width=True)
 
 
-def main(models_folder):
+def main(models_path):
+    """
+    Execute the app code (style selection and image upload by the user, 
+    style transfer, result display)
+    """
     st.title('Add a new style to your images!')
     device = torch_device()
     style = display_styles()
-    model = load_model(f"{models_folder}/{style}.model", device)
+    model = load_model(f"{models_path}/{style}.model", device)
     image = upload_image()
     if image is not None:
         transformed_image = transform_image(image, device, model)
@@ -88,5 +101,8 @@ def main(models_folder):
 
 if __name__ == "__main__":
     config = import_yaml_config()
-    models_folder = config.get("models_folder", "https://minio.lab.sspcloud.fr/mbricaire/mise-en-production/models")
-    main(models_folder=models_folder)
+    models_folder = config.get(
+        "models_folder", 
+        "https://minio.lab.sspcloud.fr/mbricaire/mise-en-production/models"
+        )
+    main(models_path=models_folder)

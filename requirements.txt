@@ -2,9 +2,10 @@
 --index-url https://download.pytorch.org/whl/cpu #url for pytorch
 --extra-index-url https://pypi.org/simple #url for other packages
 
-torch==2.1.2
-torchvision==0.16.2
+torch>=2.1.2
+torchvision>=0.16.2
 tqdm==4.64.1
-numpy==1.24.3
+numpy>=1.24.3
 pillow==10.0.1
 streamlit==1.31.1
+pyyaml==6.0.1
