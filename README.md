@@ -2,7 +2,7 @@
 
 [![Code quality testing](https://github.com/yseultmasson/mise-en-production/actions/workflows/test.yml/badge.svg)](https://github.com/yseultmasson/mise-en-production/actions/workflows/test.yml)
 
-App URL : [styletransfer.kub.sspcloud.fr](styletransfer.kub.sspcloud.fr).
+App URL : [styletransfer.kub.sspcloud.fr](https://styletransfer.kub.sspcloud.fr).
 
 To modify the app :
 
