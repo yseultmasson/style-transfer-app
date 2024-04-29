@@ -1,23 +1,29 @@
-# mise-en-production
+# Style transfer application
 
 [![Code quality testing](https://github.com/yseultmasson/mise-en-production/actions/workflows/test.yml/badge.svg)](https://github.com/yseultmasson/mise-en-production/actions/workflows/test.yml)
 
-To build the docker image manually:
-```bash
-docker build . -t mise-en-production
-```
+App URL : [styletransfer.kub.sspcloud.fr](styletransfer.kub.sspcloud.fr).
 
-Since the CI is set up, you can also pull our docker images from the hub. For instance, you can collect the `v0.0.1` version by running:
+To modify the app :
 
-```bash
-docker pull mattbricaire/mise-en-production:v0.0.1
-```
-
-To run a container:
-```bash
-docker run -p 8000:8000 mattbricaire/mise-en-production:v0.0.1
-```
-
-Replace `mattbricaire/mise-en-production:v0.0.1` by `mise-en-production` if you are using the manually built image.
-
-To visualize the app in a browser, go to `http://localhost:8000` if `http://0.0.0.0:8000` does not work.
+1. Create a new branch.
+2. Update `app.py` as you wish.
+3. Check the modifications by running `streamlit run app.py --server.port=8000 --server.address=0.0.0.0`. If `http://0.0.0.0:8000` does not work, use `http://localhost:8000` to visualize the app in a browser.
+4. Once happy, commit and push the modifications.
+5. Tag the new commit and push the tag by doing :
+   ```bash
+   git tag v1.0.0
+   git push --tags
+   ```
+   Replace `v1.0.0` with the version you need.
+7. Merge with the main branch.
+8. In the file `deployment/deployment.yaml` of the [GitOps repository](https://github.com/yseultmasson/style-transfer-app-deployment), replace the image version with the new one:
+   ```deployment/deployment.yaml
+   ...
+   spec:
+      containers:
+      - name: style-transfer
+        image: mattbricaire/mise-en-production:v1.0.0 <- replace version here
+        ports:
+        - containerPort: 8000
+   ```
