@@ -89,7 +89,7 @@ def main(models_path):
     Execute the app code (style selection and image upload by the user, 
     style transfer, result display)
     """
-    st.title('Add a new style to your images!')
+    st.title('Add a new style to your images!!')
     device = torch_device()
     style = display_styles()
     model = load_model(f"{models_path}/{style}.model", device)
