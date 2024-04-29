@@ -1,6 +1,6 @@
 # Style transfer application
 
-[![Code quality testing](https://github.com/yseultmasson/mise-en-production/actions/workflows/test.yml/badge.svg)](https://github.com/yseultmasson/mise-en-production/actions/workflows/test.yml)
+[![Test code quality](https://github.com/yseultmasson/mise-en-production/actions/workflows/test.yml/badge.svg)](https://github.com/yseultmasson/mise-en-production/actions/workflows/test.yml) [![Build Docker image](https://github.com/yseultmasson/style-transfer-app/actions/workflows/prod.yml/badge.svg)](https://github.com/yseultmasson/style-transfer-app/actions/workflows/prod.yml)
 
 App URL : [styletransfer.kub.sspcloud.fr](https://styletransfer.kub.sspcloud.fr).
 

@@ -1,4 +1,4 @@
-name: Code quality testing
+name: Test code quality
 
 on: [push]
 
