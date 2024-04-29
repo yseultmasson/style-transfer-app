@@ -1,10 +1,7 @@
 name: Construction image Docker
 
 on: 
-  push:
-    branches:
-      - main
-      - continuous-deployment
+  [push]
 
 jobs:
   docker:
