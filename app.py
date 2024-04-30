@@ -7,6 +7,8 @@ import streamlit as st
 from PIL import Image
 import torch
 
+from streamlit_image_select import image_select
+
 from src.networks.image_transformer_net import ImageTransformNet
 from src.models.style_transfer import style_transfer
 from src.utils.get_yaml_config import import_yaml_config
@@ -20,13 +22,17 @@ def display_styles(styles_path="static/styles"):
     for style in os.listdir(styles_path):
         styles[style.split(".")[0]] = f"{styles_path}/{style}"
 
-    # Display the box to choose a style
-    selected_style = st.selectbox(
-        "Choose one of the following styles:", list(styles.keys())
-    )
+    # Display the styles to choose from
+    styles_names = [name.replace("_", " ").title() for name in list(styles.keys())]
 
-    # Display the selected image
-    st.image(styles[selected_style], caption=selected_style, width=256)
+    selected_style_index = image_select(label="Choose one of the following styles:", 
+                                  images=list(styles.values()),
+                                  captions=styles_names,
+                                  index=0,
+                                  return_value="index"
+                                  )
+    
+    selected_style = list(styles.keys())[selected_style_index]
 
     return selected_style
 
@@ -100,8 +106,12 @@ def main(models_path):
     Execute the app code (style selection and image upload by the user,
     style transfer, result display)
     """
+    st.set_page_config(
+        page_title="Style transfer", page_icon="🖼️", initial_sidebar_state="collapsed"
+    )
+    
     st.title(
-        ":rainbow[Add a new style to your images] :lower_left_paintbrush: :sparkles:"
+        ":rainbow[Add a new style to your pictures] :lower_left_paintbrush: :sparkles:"
     )
     device = torch_device()
     style = display_styles()
