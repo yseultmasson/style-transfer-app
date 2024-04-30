@@ -33,7 +33,7 @@ def upload_image():
     """Display a box in which the user can upload an image."""
 
     # File uploader widget for image upload
-    uploaded_image = st.file_uploader('Upload an image:', type=['jpg', 'jpeg', 'png'])
+    uploaded_image = st.file_uploader('Upload an image:', type=['jpg', 'png'])
 
     if uploaded_image is None:
         st.info('Please upload an image.')
@@ -66,6 +66,8 @@ def load_model(model_path, device):
 def transform_image(image, device, model):
     """Apply style transfer to the image."""
     image = Image.open(image)
+    if image.mode != 'RGB':
+        image = image.convert('RGB') #Convert image to RGB (3 channels)
     size = image.size
     image = style_transfer(image, device, model, img_size=max(size))
     image = image.resize(size)
@@ -89,7 +91,7 @@ def main(models_path):
     Execute the app code (style selection and image upload by the user, 
     style transfer, result display)
     """
-    st.title('Add a new style to your images!!')
+    st.title(':rainbow[Add a new style to your images!]')
     device = torch_device()
     style = display_styles()
     model = load_model(f"{models_path}/{style}.model", device)
