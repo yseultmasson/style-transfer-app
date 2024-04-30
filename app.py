@@ -16,7 +16,7 @@ from src.utils.get_yaml_config import import_yaml_config
 def page_intro():
     """Style and introduction of the page."""
     st.set_page_config(
-        page_title="Style transfer", page_icon="🖼️", initial_sidebar_state="collapsed"
+        page_title="Style transfer", page_icon="🖌️", initial_sidebar_state="collapsed"
     )
     
     st.title(
@@ -158,6 +158,8 @@ def main(models_path):
 
     else:
         st.info("Waiting for an image to transform...")
+
+    st.caption("Copyright © 2024 Yseult Masson, Matthieu Bricaire, Rayan Talate")
 
 
 if __name__ == "__main__":
