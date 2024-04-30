@@ -14,14 +14,12 @@ from src.utils.get_yaml_config import import_yaml_config
 
 
 def page_intro():
-    """Style and introduction of the page."""
+    """Configuration and introduction of the page."""
     st.set_page_config(
         page_title="Style transfer", page_icon="🖌️", initial_sidebar_state="collapsed"
     )
-    
-    st.title(
-        ":rainbow[Add a new style to your pictures]"
-    )
+
+    st.title(":rainbow[Add a new style to your pictures]")
 
     st.write(
         """
@@ -29,7 +27,7 @@ def page_intro():
         Our app offers three distinct styles to transform your photos. 
         Simply select a style, upload a picture of your choice, and watch as the app transforms your image!
         """
-            )
+    )
 
 
 def display_styles(styles_path="static/styles"):
@@ -40,17 +38,19 @@ def display_styles(styles_path="static/styles"):
     for style in os.listdir(styles_path):
         styles[style.split(".")[0]] = f"{styles_path}/{style}"
 
-    # Display the styles to choose from
     styles_names = [name.replace("_", " ").title() for name in list(styles.keys())]
 
     st.subheader("Our styles :frame_with_picture:")
-    selected_style_index = image_select(label="First, choose one of the following styles:", 
-                                  images=list(styles.values()),
-                                  captions=styles_names,
-                                  index=0,
-                                  return_value="index"
-                                  )
-    
+
+    # Display the styles to choose from
+    selected_style_index = image_select(
+        label="First, choose one of the following styles:",
+        images=list(styles.values()),
+        captions=styles_names,
+        index=0,
+        return_value="index",
+    )
+
     # Return the selected style (mosaic, tapestry or starry_night)
     selected_style = list(styles.keys())[selected_style_index]
 
@@ -103,6 +103,8 @@ def transform_image(image, device, model):
         image.thumbnail((1500, 1500))
 
     size = image.size
+
+    # Apply style transfer
     image = style_transfer(image, device, model, img_size=max(size))
     image = image.resize(size)
     return image
@@ -111,7 +113,7 @@ def transform_image(image, device, model):
 def display_transformed_image(original_image, transformed_image):
     """Display the original and the transformed images."""
 
-    col1, col2 = st.columns(2)  # Create two columns
+    col1, col2 = st.columns(2)
 
     with col1:
         st.image(original_image, caption="Original image", use_column_width=True)
@@ -125,16 +127,16 @@ def download_transformed_image(image):
 
     # Convert the PIL image to bytes
     image_bytes = BytesIO()
-    image.save(image_bytes, format='JPEG')
+    image.save(image_bytes, format="JPEG")
     image_bytes.seek(0)  # Reset the file pointer to the beginning
 
     # Create the download button
-    st.download_button(label="Download your image!",
-                           data=image_bytes,
-                           file_name="style_transfer_image.jpg",
-                           mime="image/jpeg"  
-                           )
-
+    st.download_button(
+        label="Download your image!",
+        data=image_bytes,
+        file_name="style_transfer_image.jpg",
+        mime="image/jpeg",
+    )
 
 
 def main(models_path):
