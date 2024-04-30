@@ -66,8 +66,15 @@ def load_model(model_path, device):
 def transform_image(image, device, model):
     """Apply style transfer to the image."""
     image = Image.open(image)
+
+    # Convert image to RGB (3 channels)
     if image.mode != 'RGB':
-        image = image.convert('RGB') #Convert image to RGB (3 channels)
+        image = image.convert('RGB')
+
+    # Resize images that are too large (max length=1500)
+    if any(element > 1500 for element in image.size):
+        image.thumbnail((1500, 1500))
+
     size = image.size
     image = style_transfer(image, device, model, img_size=max(size))
     image = image.resize(size)
@@ -91,7 +98,7 @@ def main(models_path):
     Execute the app code (style selection and image upload by the user, 
     style transfer, result display)
     """
-    st.title(':rainbow[Add a new style to your images!]')
+    st.title(':rainbow[Add a new style to your images] :lower_left_paintbrush: :sparkles:')
     device = torch_device()
     style = display_styles()
     model = load_model(f"{models_path}/{style}.model", device)
